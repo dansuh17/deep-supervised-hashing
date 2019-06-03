@@ -1,0 +1,10 @@
+## intellij
+.idea/
+*.iml
+
+## python
+__pycache__/
+venv/
+
+## ctags
+tags
