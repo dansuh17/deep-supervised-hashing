@@ -19,7 +19,7 @@ class ResBlock(nn.Module):
 
         self.downsample_layer = None
         self.do_downsample = False
-        if in_channels != out_channels:
+        if in_channels != out_channels or stride != 1:
             self.do_downsample = True
             self.downsample_layer = nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, 3, stride, 1, bias=False),
@@ -36,8 +36,26 @@ class ResBlock(nn.Module):
         return F.relu(out + identity, inplace=True)
 
 
+class ResNet(nn.Module):
+    def __init__(self, num_classes: int):
+        super().__init__()
+        self.net = nn.Sequential(
+            ResBlock(in_channels=1, out_channels=16),
+            ResBlock(in_channels=16, out_channels=16),
+            ResBlock(in_channels=16, out_channels=16, stride=2),
+        )
+        self.linear = nn.Linear(4096, num_classes)
+
+    def forward(self, x):
+        x = self.net(x)
+        x = x.view(-1, 4096)
+        return self.linear(x)
+
+
 if __name__ == '__main__':
-    dummy_tensor = torch.randn((2, 128, 32, 32))
+    dummy_tensor = torch.randn((2, 1, 32, 32))
     basic_block = ResBlock(128, 64, 2)
-    print(basic_block)
-    print(basic_block(dummy_tensor).size())
+
+    resnet = ResNet(10)
+    print(resnet)
+    print(resnet(dummy_tensor).size())
