@@ -26,6 +26,9 @@ class ResBlock(nn.Module):
                 nn.BatchNorm2d(out_channels),
             )
 
+        # initialize weights
+        self.apply(self.init_weights)
+
     def forward(self, x):
         identity = x
         out = self.net(x)
@@ -34,6 +37,11 @@ class ResBlock(nn.Module):
             identity = self.downsample_layer(x)
 
         return F.relu(out + identity, inplace=True)
+
+    @staticmethod
+    def init_weights(m):
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+            nn.init.xavier_normal_(m.weight)
 
 
 class ResNet(nn.Module):
@@ -44,18 +52,45 @@ class ResNet(nn.Module):
             ResBlock(in_channels=16, out_channels=16),
             ResBlock(in_channels=16, out_channels=16, stride=2),
         )
-        self.linear = nn.Linear(4096, num_classes)
+        self.linear_input_size = 3136
+        self.linear = nn.Linear(self.linear_input_size, num_classes)
+
+        # initialize weights
+        self.apply(self.init_weights)
 
     def forward(self, x):
         x = self.net(x)
-        x = x.view(-1, 4096)
+        x = x.view(-1, self.linear_input_size)
         return self.linear(x)
+
+    @staticmethod
+    def init_weights(m):
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+            nn.init.xavier_normal_(m.weight)
+
+
+class LiuDSH(nn.Module):
+    def __init__(self, code_size: int):
+        super().__init__()
+        resnet = ResNet(num_classes=10)
+        resnet.linear = nn.Linear(
+            in_features=resnet.linear_input_size, out_features=code_size)
+        self.net = resnet
+
+        # initialize weights
+        self.apply(self.init_weights)
+
+    def forward(self, x):
+        return self.net(x)
+
+    @staticmethod
+    def init_weights(m):
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+            nn.init.xavier_normal_(m.weight)
 
 
 if __name__ == '__main__':
-    dummy_tensor = torch.randn((2, 1, 32, 32))
-    basic_block = ResBlock(128, 64, 2)
-
-    resnet = ResNet(10)
-    print(resnet)
-    print(resnet(dummy_tensor).size())
+    dummy_tensor = torch.randn((10, 1, 28, 28))
+    dsh = LiuDSH(11)
+    print(dsh)
+    print(dsh(dummy_tensor).size())
