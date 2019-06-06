@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torchvision.models.resnet import ResNet, BasicBlock
 
 
 class ResBlock(nn.Module):
