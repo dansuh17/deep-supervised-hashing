@@ -1,3 +1,7 @@
+## project_specific
+data_out/
+runs/
+
 ## intellij
 .idea/
 *.iml
@@ -8,3 +12,5 @@ venv/
 
 ## ctags
 tags
+tags.lock
+tags.temp
