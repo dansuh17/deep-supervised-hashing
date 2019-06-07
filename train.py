@@ -26,7 +26,7 @@ LR_INIT = 3e-4
 BATCH_SIZE = 128
 EPOCH = 40
 NUM_WORKERS = 8
-CODE_SIZE = 8
+CODE_SIZE = 8  # bits
 MARGIN = CODE_SIZE / 2
 ALPHA = 0.01  # TODO: adjust
 
@@ -83,6 +83,7 @@ test_dataloader = DataLoader(
 model = LiuDSH(code_size=CODE_SIZE).to(device)
 
 mse_loss = nn.MSELoss(reduction='none')
+l1_loss = nn.L1Loss(reduction='mean')
 
 optimizer = optim.Adam(model.parameters(), lr=LR_INIT)
 
@@ -121,9 +122,10 @@ class Trainer:
         negative_pair_loss = 0.5 * target_equals * torch.max(zeros, margin - squared_loss)
         mean_negative_pair_loss = torch.mean(negative_pair_loss)
 
-        # T3: alpha(abs(x1 - 1) + abs(x2 - 1))
-        value_regularization = ALPHA * (torch.abs(x_out - 1) + torch.abs(y_out - 1))
-        mean_value_regularization = torch.mean(value_regularization)
+        # T3: alpha(dst_l1(abs(x1), 1)) + dist_l1(abs(x2), 1)))
+        mean_value_regularization = ALPHA * (
+                l1_loss(torch.abs(x_out), torch.ones_like(x_out)) +
+                l1_loss(torch.abs(y_out), torch.ones_like(y_out)))
 
         loss = mean_positive_pair_loss + mean_negative_pair_loss + mean_value_regularization
 
@@ -167,12 +169,12 @@ class Trainer:
                         model, test_x_imgs, test_y_imgs, test_target_equals, train=False)
 
                 # show all images that consist the pairs
-                test_imgs.extend([test_x_imgs.cpu()[:2], test_y_imgs.cpu()[:2]])
-                test_targets.extend([test_x_targets.cpu()[:2], test_y_targets.cpu()[:2]])
+                test_imgs.extend([test_x_imgs.cpu()[:5], test_y_imgs.cpu()[:5]])
+                test_targets.extend([test_x_targets.cpu()[:5], test_y_targets.cpu()[:5]])
 
                 # embedding1: hamming space embedding
-                x_hash = torch.round(x_embeddings.cpu()[:2].clamp(-1, 1) * 0.5 + 0.5)
-                y_hash = torch.round(y_embeddings.cpu()[:2].clamp(-1, 1) * 0.5 + 0.5)
+                x_hash = torch.round(x_embeddings.cpu()[:5].clamp(-1, 1) * 0.5 + 0.5)
+                y_hash = torch.round(y_embeddings.cpu()[:5].clamp(-1, 1) * 0.5 + 0.5)
                 hash_embeddings.extend([x_hash, y_hash])
 
                 # emgedding2: raw embedding
