@@ -1,12 +1,5 @@
 """
 Liu et al., "Deep Supervised Hashing for Fast Image Retrieval"
-
-Train DSH on MNIST
-1. MNIST Pair generation (later make this online sampling)
-2. Identify hyperparameters, implement loss function
-3. Train - log any important information
-4. Test image retrieval from Hamming space
-5. do a t-SNE on Hamming space
 """
 from collections import defaultdict
 import random
@@ -196,16 +189,14 @@ class Trainer:
 
             # TODO: print text as hexadecimal strings
             hash_vals = torch.cat(hash_embeddings).numpy().astype(int)
-            hash_vals = np.packbits(hash_vals, axis=-1)  # to uint8
+            hash_vals = np.packbits(hash_vals, axis=-1).squeeze()  # to uint8
             targets = torch.cat(test_targets).numpy().astype(int)
 
             hashdict = defaultdict(list)
             for target_class, hash_value in zip(targets, hash_vals):
-                print(target_class)  # TODO
-                print(hash_value)  # TODO
-                hashdict[target_class].append(f'{hash_value[0]:#04x}')  # ex) 15 -> 0x0f
+                hashdict[target_class].append(f'{hash_value:#04x}')  # ex) 15 -> 0x0f
 
-            result_texts = []
+            result_texts = []  # TODO: debug
             for target_class in sorted(hashdict.keys()):
                 for hashval in hashdict[target_class]:
                     result_texts.append(f'class: {target_class:02d} - {hashval}')
@@ -214,7 +205,7 @@ class Trainer:
                         hashval, global_step=self.global_step)
 
             result_text = '\n'.join(result_texts)
-            print(result_text)  # TODO
+            print(result_text)  # TODO debug
 
             self.global_epoch += 1
 
