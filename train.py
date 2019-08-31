@@ -20,7 +20,7 @@ BATCH_SIZE = 128
 EPOCH = 40
 NUM_WORKERS = 8
 CODE_SIZE = 8  # bits
-MARGIN = CODE_SIZE / 2
+MARGIN = 5
 ALPHA = 0.01  # TODO: adjust
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
