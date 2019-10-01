@@ -90,6 +90,6 @@ class LiuDSH(nn.Module):
 
 if __name__ == '__main__':
     dummy_tensor = torch.randn((10, 1, 28, 28))
-    dsh = LiuDSH(11)
+    dsh = LiuDSH(code_size=11)
     print(dsh)
     print(dsh(dummy_tensor).size())
