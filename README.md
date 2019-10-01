@@ -1,4 +1,4 @@
-# Deep Supervised Hashing
+# Deep Supervised Hashing in pyTorch
 
 This is a [pyTorch](https://pytorch.org/) implementation of paper: [Liu et al. - Deep Supervised Hashing for Fast Image Retrieval (CVPR 2016)](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Liu_Deep_Supervised_Hashing_CVPR_2016_paper.pdf)
 
